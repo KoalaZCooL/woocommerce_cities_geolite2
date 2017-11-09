@@ -12,7 +12,7 @@
 defined('ABSPATH') or die('You can not access this file directly!');
 
 require_once(dirname(__FILE__) . '/vendor/autoload.php');
-//
+use MaxMind\Db\Reader;
 /**
  * Check if WooCommerce is active
  */
@@ -157,7 +157,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 			// Get country places
 			$places = $this->get_places($current_cc);
 
-			if (is_array($places) ) {//&& 'zh_CN' !== get_locale()
+			if (is_array($places) && !empty($places) ) {
 				$field .= '<select name="' . esc_attr($key) . '" id="' . esc_attr($args['id']) . '" class="city_select ' . esc_attr(implode(' ', $args['input_class'])) . '" ' . implode(' ', $custom_attributes) . ' placeholder="' . esc_attr($args['placeholder']) . '">';
 
 				$field .= '<option value="">' . __('Select an option&hellip;', 'woocommerce') . '</option>';
@@ -179,7 +179,21 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
 				$field .= '</select>';
 			} else {
-echo 'GARUT '.$value;
+				$clientIP = $this->get_the_user_ip();
+echo "<pre>ur IP: $clientIP";#101.187.80.93
+				$reader = new Reader(dirname(__FILE__).'/GeoLite2-City.mmdb');
+				$geolite2 = $reader->get($clientIP);
+				$geolite2['postal']['code'];
+				$geolite2['subdivisions'][0]['names']['en'];
+echo print_r($geolite2,1).'</pre>';
+				$reader->close();
+//				if(empty($value))
+				{
+					$value = ('zh_CN' === get_locale() && !empty($geolite2['names']['zh-CN']) )
+									?$geolite2['names']['zh-CN']
+									:$geolite2['names']['en'];
+				}
+				
 				$field .= '<input type="text" class="input-text ' . esc_attr(implode(' ', $args['input_class'])) . '" value="' . esc_attr($value) . '"  placeholder="' . esc_attr($args['placeholder']) . '" name="' . esc_attr($key) . '" id="' . esc_attr($args['id']) . '" ' . implode(' ', $custom_attributes) . ' />';
 			}
 
@@ -280,7 +294,7 @@ echo 'GARUT '.$value;
 			} else {
 				$ip = $_SERVER['REMOTE_ADDR'];
 			}
-			return apply_filters( 'wpb_get_ip', $ip );
+			return $ip;#apply_filters( 'wpb_get_ip', $ip );
 		}
 	}
 
