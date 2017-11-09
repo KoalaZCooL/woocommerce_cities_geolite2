@@ -11,7 +11,7 @@ $places['CN'] = array (
     5 => '平谷',
     6 => '怀柔',
     7 => '昌平',
-  ),
+  ),/*
   'CN3' =>
   array (
     0 => '天津',
@@ -482,7 +482,7 @@ $places['CN'] = array (
     13 => '大理市',
     14 => '宜政',
     15 => '文山',
-  ),
+  ),//*///
   'CN31' =>
   array (
     0 => '拉萨',
@@ -491,7 +491,7 @@ $places['CN'] = array (
     3 => '岗堆',
     4 => '奴日',
     5 => '松多',
-  ),
+  )/*,
   'CN26' =>
   array (
     0 => '洋洲',
@@ -534,7 +534,7 @@ $places['CN'] = array (
     5 => '克拉玛依',
     6 => '哈密地区',
     7 => '延安北路',
-  ),
+  ),//*///
 );
 $prov_keys = array(
   53 => 'CN1',
@@ -575,4 +575,7 @@ $prov_keys = array(
 //foreach ($prov_data as $csv) {
 //	$city = explode(',', $csv);
 //	if($city[2])$places['CN'][$prov_keys[$city[0]]][] = $city[2];
+//}
+//foreach ($places['CN'] as $k => $ac) {
+//	echo "\n$k ".count($ac);
 //}

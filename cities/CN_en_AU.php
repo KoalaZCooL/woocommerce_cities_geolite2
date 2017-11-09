@@ -785,3 +785,6 @@ $prov_keys = array(
 //	$city = explode(',', $csv);
 //	$places['CN'][$prov_keys[$city[0]]][] = $city[1];//
 //}
+//foreach ($places['CN'] as $k => $ac) {
+//	echo "\n$k ".count($ac);
+//}
