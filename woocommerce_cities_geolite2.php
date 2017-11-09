@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Cities Dropdown for Woocommerce
- * Description: Woocommerce plugin for listing provinces/states/regions and cities.
- * Version: 1.0.0
+ * Plugin Name: Cities Dropdown/Autodetect for Woocommerce
+ * Description: Woocommerce plugin for listing cities for China OR autodetect city by GeoIP.
+ * Version: 1.1.0
  * Developer: Faza F. Adhiman
  * Developer URI: https://www.linkedin.com/in/faza-adhiman/
  */
@@ -40,8 +40,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
 		public function init_cities() {
 			add_filter('woocommerce_default_address_fields', [$this, 'wc_default_fields']);
-			add_filter('woocommerce_billing_fields', array( $this, 'wc_billing_fields' ), 10, 2 );
-			add_filter('woocommerce_shipping_fields', array( $this, 'wc_shipping_fields' ), 10, 2 );
+//			add_filter('woocommerce_billing_fields', array( $this, 'wc_billing_fields' ), 10, 2 );
+//			add_filter('woocommerce_shipping_fields', array( $this, 'wc_shipping_fields' ), 10, 2 );
 			add_filter('woocommerce_form_field_city', array($this, 'wc_form_field_city'), 10, 4);
 
 			add_action('wp_enqueue_scripts', array($this, 'load_scripts'));
@@ -70,6 +70,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		public function wc_default_fields($fields) {
 			$fields['country']['priority'] = 77;
 			$fields['city']['priority'] = 88;
+			$fields['city']['type'] = 'city';
 
 			return $fields;
 		}
@@ -154,23 +155,15 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 			$state_key = $key == 'billing_city' ? 'billing_state' : 'shipping_state';
 			$current_sc = WC()->checkout->get_value($state_key);
 
-			// Get country places
+			// Get places (cities)
 			$places = $this->get_places($current_cc);
 
-			if (is_array($places) && !empty($places) ) {
+			if (is_array($places[$current_sc]) && !empty($places[$current_sc]) ) {
 				$field .= '<select name="' . esc_attr($key) . '" id="' . esc_attr($args['id']) . '" class="city_select ' . esc_attr(implode(' ', $args['input_class'])) . '" ' . implode(' ', $custom_attributes) . ' placeholder="' . esc_attr($args['placeholder']) . '">';
 
 				$field .= '<option value="">' . __('Select an option&hellip;', 'woocommerce') . '</option>';
 
-				if ($current_sc) {
-					$dropdown_places = $places[$current_sc];
-				} else if (is_array($places) && isset($places[0])) {
-					$dropdown_places = array_reduce($places, 'array_merge', array());
-					sort($dropdown_places);
-				} else {
-					$dropdown_places = $places;
-				}
-
+				$dropdown_places = $places[$current_sc];
 				foreach ($dropdown_places as $city_name) {
 					if (!is_array($city_name)) {
 						$field .= '<option value="' . esc_attr($city_name) . '" ' . selected($value, $city_name, false) . '>' . $city_name . '</option>';
@@ -179,21 +172,22 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
 				$field .= '</select>';
 			} else {
-				$clientIP = $this->get_the_user_ip();
-echo "<pre>ur IP: $clientIP";#101.187.80.93
 				$reader = new Reader(dirname(__FILE__).'/GeoLite2-City.mmdb');
+
+				$clientIP = $this->get_the_user_ip();
 				$geolite2 = $reader->get($clientIP);
-				$geolite2['postal']['code'];
-				$geolite2['subdivisions'][0]['names']['en'];
-echo print_r($geolite2,1).'</pre>';
+//				$geolite2['postal']['code'];
+//				$geolite2['subdivisions'][0]['names']['en'];
+
 				$reader->close();
+
 //				if(empty($value))
 				{
 					$value = ('zh_CN' === get_locale() && !empty($geolite2['names']['zh-CN']) )
-									?$geolite2['names']['zh-CN']
-									:$geolite2['names']['en'];
+									?$geolite2['city']['names']['zh-CN']
+									:$geolite2['city']['names']['en'];
 				}
-				
+
 				$field .= '<input type="text" class="input-text ' . esc_attr(implode(' ', $args['input_class'])) . '" value="' . esc_attr($value) . '"  placeholder="' . esc_attr($args['placeholder']) . '" name="' . esc_attr($key) . '" id="' . esc_attr($args['id']) . '" ' . implode(' ', $custom_attributes) . ' />';
 			}
 
