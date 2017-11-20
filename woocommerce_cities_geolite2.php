@@ -44,6 +44,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 //			add_filter('woocommerce_shipping_fields', array( $this, 'wc_shipping_fields' ), 10, 2 );
 			add_filter('woocommerce_form_field_city', array($this, 'wc_form_field_city'), 10, 4);
 
+			add_filter( 'woocommerce_ship_to_different_address_checked', '__return_false' );
+
 			add_action('wp_enqueue_scripts', array($this, 'load_scripts'));
 		}
 
